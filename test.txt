@@ -1,4 +1,128 @@
-this is my first text file this is my first text file this is my first text file
-this is my first text file
-this is my first text file
-this is my first text file
+// this my SecondActivity.java
+public class SecondActivity extends AppCompatActivity implements View.OnClickListener {
+
+
+    final String LOG = "SecondActivity";
+    Button btnCheck;
+    EditText etDrugname;
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_second);
+        btnCheck = (Button) findViewById(R.id.btnCheck);
+        etDrugname = (EditText) findViewById(R.id.etDrugname);
+        btnCheck.setOnClickListener(this);
+    }
+
+    @Override
+            public void onClick(View v) {
+                HashMap postData = new HashMap();
+                final String Drugname = etDrugname.getText().toString();
+                final Post Referenceid = new Post();
+               Referenceid.setReference("$resistance_ref", Referenceid);
+                postData.put("txtDrugname", Drugname);
+
+                PostResponseAsyncTask task1 = new PostResponseAsyncTask(SecondActivity.this, postData,
+                        new AsyncResponse() {
+                            @Override
+                            public void processFinish(String s) {
+                                Log.d(LOG, s);
+                                if (s.contains("Drug found")) {
+                               
+                                    Intent intent = new Intent(SecondActivity.this, DisplayActivity.class);
+                                    intent.putExtra("Drugname", etDrugname.getText().toString());
+                                    intent.putExtra("Referenceid", Referenceid);
+
+                                    startActivity(intent);
+                                    } else {
+                                    Intent intent = new Intent(SecondActivity.this, Display2Activity.class);
+                                    intent.putExtra("Drugname", etDrugname.getText().toString());
+                                    startActivity(intent);
+                                }
+                            }
+                        });
+                task1.execute("http://www.e-bioinformatics.net/db/utipedia/test/login2.php");
+            }
+        }
+		
+//this is my DisplayActivity where output should come
+
+public class DisplayActivity extends AppCompatActivity {
+
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+   super.onCreate(savedInstanceState);
+ setContentView(R.layout.activity_display);
+
+       TextView nameView=(TextView)findViewById(R.id.result);
+     nameView.setText(getIntent().getExtras().getString("Drugname"));
+
+
+        Intent intent = getIntent();
+        TextView Referenceid=(TextView)findViewById(R.id.PMID);
+        Post myComment = (Post )intent.getParcelableExtra("Referenceid");
+        String pmid = myComment.getReference();
+		
+		}}
+		
+// this is my server side php code
+
+<?php
+	$input= $_POST['txtDrugname'];
+	$input = strtolower($input);
+
+if($input == ''){
+echo "OOPS! It seems the input section is left blank. <br>please submit the <b>drug name.</b>";
+}else{
+
+    $utidb = mysql_connect("localhost", "ebioinfo_uti0912", "uti@097")
+	or die(mysql_error());
+
+
+
+	mysql_select_db("ebioinfo_utipedia",$utidb);
+	$sql_drug = "SELECT * FROM UTIPEDIA"; 
+	$result_drug = mysql_query($sql_drug, $utidb);
+	
+	
+
+
+	$i=0;
+
+
+		while ($row_drug = mysql_fetch_assoc($result_drug))
+		{
+			$resistance_drug = $row_drug['Drugname'];
+			$resistance_drug = strtolower($resistance_drug);
+			
+			$resistance_ref = $row_drug['Referenceid'];
+			$part = explode(',', $resistance_ref);
+			
+					
+			if($input == $resistance_drug)
+			{
+				
+					$i=1;
+					echo "Drug found";
+					
+                    echo(json_encode($resistance_ref));
+
+					
+					
+					
+				
+			}
+			
+			
+		}if($i !=1)
+		{echo "$input is not found in the database!";}
+
+
+   
+    mysql_close();
+   
+
+	}		
+		

@@ -1,4 +1,4 @@
-// this my SecondActivity.java
+// this my SecondActivity.java where user will enter drug name
 public class SecondActivity extends AppCompatActivity implements View.OnClickListener {
 
 
